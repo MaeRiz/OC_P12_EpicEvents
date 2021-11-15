@@ -14,7 +14,6 @@ class ProspectViewSet(viewsets.ModelViewSet):
     serializer_class = serializer.ClientSerializer
     permission_classes = (IsAuthenticated, permissions.ProspectPermissions,)
 
-
     def create(self, request):
         data = request.data.copy()
         data['prospect'] = True
@@ -25,13 +24,10 @@ class ProspectViewSet(viewsets.ModelViewSet):
 
         return Response(serialized_data.data, status=status.HTTP_201_CREATED)
 
-
     def update(self, request, pk=None):
         client = get_object_or_404(models.Client, pk=pk)
 
         data = request.data.copy()
-
-        print(request.method)
 
         if data['prospect'] == False:
             data['sale_contact'] = request.user.pk
@@ -53,14 +49,12 @@ class ClientViewSet(viewsets.ModelViewSet):
     serializer_class = serializer.ClientSerializer
     permission_classes = (IsAuthenticated, permissions.ClientPermissions)
 
-
     def get_queryset(self):
         if self.request.user.role == 'SUPPORT':
             return models.Client.objects.filter(
                 contract__event__support_contact=self.request.user.pk
             )
         return models.Client.objects.filter(sale_contact=self.request.user.pk)
-
 
     def create(self, request):
         data = request.data.copy()
@@ -81,7 +75,6 @@ class ContractViewSet(viewsets.ModelViewSet):
     serializer_class = serializer.ContractSerializer
     permission_classes = (IsAuthenticated, permissions.ContractPermissions)
 
-
     def get_queryset(self):
         if self.request.user.role == 'SUPPORT':
             return models.Contract.objects.filter(
@@ -89,7 +82,6 @@ class ContractViewSet(viewsets.ModelViewSet):
                 event__support_contact=self.request.user.pk
             )
         return models.Contract.objects.filter(client=self.kwargs['client_pk'])
-
 
     def create(self, request, client_pk=None):
         data = request.data.copy()
@@ -109,15 +101,13 @@ class EventViewSet(viewsets.ModelViewSet):
     serializer_class = serializer.EventSerializer
     permission_classes = (IsAuthenticated, permissions.EventPermissions)
 
-
     def get_queryset(self):
         return models.Event.objects.filter(
             contract=self.kwargs['contract_pk'],
             support_contact=self.request.user.pk
         )
 
-
-    def create(self, request, contract_pk=None):
+    def create(self, request, client_pk=None, contract_pk=None):
         data = request.data.copy()
         data['contract'] = contract_pk
 
