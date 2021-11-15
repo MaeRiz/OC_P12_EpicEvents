@@ -5,6 +5,9 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 
 from app_crm import views
 
+def trigger_error(request):
+    division_by_zero = 1 / 0
+
 router = routers.SimpleRouter()
 router.register('client', views.ClientViewSet)
 router.register('prospect', views.ProspectViewSet)
@@ -16,6 +19,7 @@ contract_router = routers.NestedSimpleRouter(client_router, 'contract', lookup='
 contract_router.register('event', views.EventViewSet, basename='contract-event')
 
 urlpatterns = [
+    path('sentry-debug/', trigger_error),
     path('admin/', admin.site.urls),
 
     path('api/login/', TokenObtainPairView.as_view()),
