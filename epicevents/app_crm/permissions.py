@@ -5,15 +5,15 @@ class ProspectPermissions(permissions.BasePermission):
 
     def has_permission(self, request, view):
         if request.method in permissions.SAFE_METHODS:
-            return request.user.role in ('MANAGER', 'COMMERCIAL')
-        elif request.method == 'PUT':
             return request.user.role == 'COMMERCIAL'
-        return request.user.role == 'MANAGER'
+        elif request.method in ('PUT', 'PATCH'):
+            return request.user.role == 'COMMERCIAL'
+        return False
 
     def has_object_permission(self, request, view, obj):
         if request.method in permissions.SAFE_METHODS:
-            return request.user.role in ('MANAGER', 'COMMERCIAL')
-        return request.user.role == 'MANAGER'
+            return request.user.role == 'COMMERCIAL'
+        return False
 
 
 class ClientPermissions(permissions.BasePermission):
@@ -26,7 +26,7 @@ class ClientPermissions(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         if request.method in permissions.SAFE_METHODS:
             return True
-        return request.user.pk == obj.sale_contact
+        return request.user == obj.sale_contact
 
 
 class ContractPermissions(permissions.BasePermission):
@@ -48,9 +48,11 @@ class EventPermissions(permissions.BasePermission):
     def has_permission(self, request, view):
         if request.method in permissions.SAFE_METHODS:
             return True
+        elif request.method in ("PUT", "PATCH"):
+            return request.user.role in ("COMMERCIAL", "SUPPORT")
         return request.user.role == 'COMMERCIAL'
 
     def has_object_permission(self, request, view, obj):
         if request.method in permissions.SAFE_METHODS:
             return True
-        return request.user.pk == obj.support_contact
+        return obj.support_contact == request.user
